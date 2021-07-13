@@ -28,14 +28,14 @@ host_check = ['동구', '북구', '서구', '남구', '강서', '중구', '고�
 
 def selenium_run():
     result = youth()
-    threading.Timer(5, selenium_run()).start()
+    #threading.Timer(5, selenium_run()).start()
 
 # In[7]:
 
 
 def youth():
     # 크롬 드라이버 저장된 위치
-    cromedriver_path = 'D:\chromedriver'
+    cromedriver_path = 'C:\projects\pythonProject'
 
     URL = 'https://www.youthcenter.go.kr/youngPlcyUnif/youngPlcyUnifList.do?pageIndex=1&pageUnit=60'
     driver = webdriver.Chrome(executable_path=cromedriver_path)
