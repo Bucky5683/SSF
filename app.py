@@ -21,7 +21,7 @@ def youth():
     cols = [column[0] for column in query.description]
     result = pd.DataFrame.from_records(data=query.fetchall(), columns=cols)
     con.close()
-    test = TodoPost()
+    #test = TodoPost()
     html = result.to_html(justify='center')
     return '<h1>Final_code_youth database.db - youth</h1><a href="/">홈화면으로 가기</br></br></a>' + html
 
