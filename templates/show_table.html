@@ -1,0 +1,21 @@
+<!Doctype html>
+<html lang="ko">
+    <head>
+        <script type = "text/javascript">
+            //다운로드
+            function Down(v1, v2){
+                document.download.target = "hide_frame";
+                document.download.action = "C:/projects/pythonProject/testing.json";
+                print("Downloading...");
+                document.testing.submit();
+            }
+        </script>
+    </head>
+    <body>
+    <form name="download" mothod="post" action="C:/projects/pythonProject/testing.json">
+        <input type="hidden" name="v1" value=""/>
+        <input type="hidden" name="v2" value=""/>
+    </form>
+    <iframe width=0 height=0 scrolling=no frameborder="0" name="hide_frame" style="margin-top:0"></iframe>
+    </body>
+</html>
