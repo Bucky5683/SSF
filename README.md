@@ -1,4 +1,5 @@
 # SSF
 SSF 서버 코드
 
-이외의 작업은 라즈베리파이 내부 파일에서 작업
+api 목록
+https://www.notion.so/582aa49a0aaa439495d3473aa18bde4b?v=c8c71ba71abf497d8055d87545c23e16
