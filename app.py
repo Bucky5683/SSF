@@ -1,4 +1,4 @@
-from flask import Flask, render_template, session, redirect, request, jsonify
+from flask import Flask, render_template, request, jsonify
 import pandas as pd
 import sqlite3
 app = Flask(__name__)
@@ -27,7 +27,7 @@ def youth():
 
 
 # 제목, 링크, 나이, 직업, 소득분위, 지원금 TF json 코드 str 형태로 리턴
-@app.route("/jsoncode")
+@app.route("/jsoncode", methods=['GET'])
 def TodoPost():
     query = cur.execute("SELECT * From all_data INNER JOIN all_data_Like ON all_data.all_idx = all_data_Like.L_idx")
     cols = [column[0] for column in query.description]
@@ -52,7 +52,7 @@ def sign_up():
     except:
         return jsonify({"isOK": False})
 
-@app.route("/login", methods=['POST'])
+@app.route("/login", methods=['GET'])
 def login():
     try:
         login_user = request.json
@@ -70,7 +70,7 @@ def UserInfo():
      html = result.to_html(justify='center')
      return '<h1>Final_code_youth database.db - youth</h1><a href="/">홈화면으로 가기</br></br></a>' + html
 
-@app.route("/Search", methods=['POST'])
+@app.route("/Search", methods=['GET'])
 def Search():
     try:
         keyword = request.json
@@ -83,7 +83,7 @@ def Search():
     except:
         return jsonify([{"all_idx": 0, "title": "", "href": "", "host": "", "like": ""}])
 
-@app.route("/Like/GetLike", methods=['POST'])
+@app.route("/Like/GetLike", methods=['GET'])
 def PUSHPOSTJJIM():
     # 게시물의 찜 횟수
     try:
@@ -96,7 +96,7 @@ def PUSHPOSTJJIM():
     except:
         return jsonify({"idx": 0, "num": 0})
 
-@app.route("/Like/Users", methods=['POST'])
+@app.route("/Like/Users", methods=['GET'])
 def PUSHUSERJJIM():
     # 유저가 어떤 걸 찜했는지
     try:
@@ -126,7 +126,7 @@ def Update_JJIM():
     except:
         return jsonify({"Check": False})
 
-@app.route("/Like/Delete", methods=['POST'])
+@app.route("/Like/Delete", methods=['DELETE'])
 def Delete_JJIM():
     try:
         json = request.json
@@ -140,7 +140,7 @@ def Delete_JJIM():
     except:
         return jsonify({"Check": False})
 
-@app.route("/Like/List", methods=['POST'])
+@app.route("/Like/List", methods=['GET'])
 def List_JJIM():
     try:
         query = cur.execute("SELECT * FROM all_data_like")
@@ -152,7 +152,7 @@ def List_JJIM():
     except:
         return jsonify([{"L_idx": 0, "Like": 0}])
 
-@app.route("/popular", methods=['POST'])
+@app.route("/popular", methods=['GET'])
 def Popular_List():
     try:
         query = cur.execute("SELECT * From all_data INNER JOIN all_data_Like ON all_data.all_idx = all_data_Like.L_idx")
@@ -165,7 +165,7 @@ def Popular_List():
     except:
         return jsonify([{"all_idx": 0, "title": "", "href": "", "host": "", "like": 0}])
 
-@app.route("/new", methods=['POST'])
+@app.route("/new", methods=['GET'])
 def New_List():
     try:
         query = cur.execute("SELECT * From all_data INNER JOIN all_data_Like ON all_data.all_idx = all_data_Like.L_idx")
@@ -179,7 +179,18 @@ def New_List():
         return js
     except:
         return jsonify([{"all_idx": 0, "title": "", "href": "", "host": "", "like": 0}])
-
+@app.route("/comment/list", methods=['GET'])
+def Comment_list():
+    try:
+        json = request.json
+        query = cur.execute("SELECT * FROM Comment WHERE ALL_idx = ?", (json.get('ALL_idx'),))
+        cols = [column[0] for column in query.description]
+        race_result = pd.DataFrame.from_records(data=query.fetchall(), columns=cols)
+        title = race_result[['C_idx', 'Comment', 'nickname', 'P_idx', 'ALL_idx']]
+        js = title.to_json(orient='records')
+        return js
+    except:
+        return jsonify([{"C_idx": 0, "Comment": "", "nickname": "", "P_idx": 0, "ALL_idx": 0}])
 @app.route("/comment/add", methods=['POST'])
 def Comment_add():
     try:
@@ -189,29 +200,104 @@ def Comment_add():
         cur.execute("INSERT INTO Comment VALUES (NULL, ?, ?, ?, ?)",
                     (json.get('Comment'), nickname[0], json.get('P_idx'), json.get('ALL_idx')))
         con.commit()
-        query = cur.execute("SELECT * FROM Comment")
-        cols = [column[0] for column in query.description]
-        race_result = pd.DataFrame.from_records(data=query.fetchall(), columns=cols)
-        title = race_result[['C_idx', 'Comment', 'nickname', 'P_idx', 'ALL_idx']]
-        js = title.to_json(orient='records')
-        return js
+        return jsonify()
     except:
-        return jsonify([{"C_idx": 0, "Comment": "", "nickname": "", "P_idx": 0, "ALL_idx": 0}])
+        print("ERROR!")
+        return jsonify()
 
-@app.route("/comment/delete", methods=['POST'])
+@app.route("/comment/delete", methods=['DELETE'])
 def Comment_delete():
     try:
         json = request.json
         cur.execute("DELETE FROM Comment WHERE C_idx = ?", (json.get('C_idx'),))
         con.commit()
-        query = cur.execute("SELECT * FROM Comment")
+        return jsonify()
+    except:
+        return jsonify()
+
+@app.route("/Search/select", methods=['GET'])
+def Search_select():
+    json = request.json
+    age = json.get('age')
+    type_ = json.get('type')
+    work = json.get('work')
+    area = json.get('area')
+
+    idx_list = []
+    idx_list = age_check(idx_list, age)
+    idx_list = type_check(idx_list, type_)
+    idx_list = work_check(idx_list, work)
+
+    result = idx_check(idx_list, age, type_, work, area)
+    js = pd.DataFrame(columns=['all_idx', 'title', 'href', 'host', 'like'])
+    for num in result.keys():
+        query = cur.execute(
+            "SELECT all_idx, title, href, host, like FROM all_data INNER JOIN all_data_Like ON all_data.all_idx = all_data_Like.L_idx WHERE all_idx = ?",
+            (num,))
         cols = [column[0] for column in query.description]
         race_result = pd.DataFrame.from_records(data=query.fetchall(), columns=cols)
-        title = race_result[['C_idx', 'Comment', 'nickname', 'P_idx', 'ALL_idx']]
-        js = title.to_json(orient='records')
-        return js
-    except:
-        return jsonify([{"C_idx": 0, "Comment": "", "nickname": "", "P_idx": 0, "ALL_idx": 0}])
+        js = pd.concat([js, race_result])
+    return js.to_json(orient='records')
+
+def age_check(idx_list, age):
+    age_list = idx_list
+    if age >= 0:
+        cur.execute("SELECT age_min, age_max FROM all_data")
+        list_ = cur.fetchall()
+        cnt = 1
+        for age_min, age_max in list_:
+            if age >= age_min and age <= age_max:
+                cur.execute("SELECT all_idx FROM all_data WHERE all_idx = ? AND age_min = ? AND age_max = ?", (cnt, age_min, age_max,))
+                all_idx = cur.fetchone()
+                age_list.append(all_idx[0])
+                cnt = cnt+1
+            else:
+                cnt = cnt+1
+                continue
+    return age_list
+
+def type_check(idx_list, type_):
+    type_list = idx_list
+    if type_ != "":
+        cur.execute("SELECT all_idx FROM all_data WHERE type = ?", (type_,))
+        list_= cur.fetchall()
+        for all_idx in list_:
+            type_list.append(all_idx[0])
+    return type_list
+
+def work_check(idx_list, work):
+    work_list = idx_list
+    if work != "":
+        if work == "제한없음" or work == "개별공고확인" or work == "기타" or work == "-":
+            cur.execute("SELECT all_idx FROM all_data")
+        else:
+            cur.execute('SELECT all_idx FROM all_data WHERE work LIKE "%' + work + '%"')
+        list_ = cur.fetchall()
+        for all_idx in list_:
+            work_list.append(all_idx[0])
+    return work_list
+
+def idx_check(idx_list, age, type_, work, area):
+    cnt = 0
+    if age >=0:
+        cnt += 1
+    for i in type_, work, area:
+        if i != "":
+            cnt += 1
+
+    print(cnt)
+    count={}
+    for i in idx_list:
+        try:
+            count[i] += 1
+        except:
+            count[i] = 1
+    result = {}
+    for i in count:
+        if count[i] > cnt-1:
+            result[i] = count[i]
+    return result
+
 
 if __name__ == '__main__':
     app.run(debug=True)
