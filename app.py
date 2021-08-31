@@ -25,6 +25,14 @@ def youth():
     html = result.to_html(justify='center')
     return '<h1>Final_code_youth database.db - youth</h1><a href="/">홈화면으로 가기</br></br></a>' + html
 
+# 댓글 테이블 확인
+@app.route("/comment")
+def comment():
+    query = cur.execute("SELECT * From Comment")
+    cols = [column[0] for column in query.description]
+    result = pd.DataFrame.from_records(data=query.fetchall(), columns=cols)
+    html = result.to_html(justify='center')
+    return '<h1>Comment database.db - Comment</h1><a href="/">홈화면으로 가기</br></br></a>' + html
 
 # 제목, 링크, 나이, 직업, 소득분위, 지원금 TF json 코드 str 형태로 리턴
 @app.route("/jsoncode", methods=['GET'])
