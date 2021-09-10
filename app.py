@@ -31,7 +31,7 @@ def youth():
     return '<h1>Final_code_youth database.db - youth</h1><a href="/">홈화면으로 가기</br></br></a>' + html
 
 # 제목, 링크, 나이, 직업, 소득분위, 지원금 TF json 코드 str 형태로 리턴
-@app.route("/jsoncode", methods=['POST'])
+@app.route("/jsoncode", methods=['GET'])
 def TodoPost():
     query = cur3.execute("SELECT * From all_data")
     cols = [column[0] for column in query.description]
@@ -67,7 +67,7 @@ def sign_up():
         return jsonify({"isOK": False})
 
 # 로그인
-@app.route("/login", methods=['POST'])
+@app.route("/login", methods=['GET'])
 def login():
     try:
         login_user = request.json
@@ -88,7 +88,7 @@ def UserInfo():
     return '<h1>User</h1><a href="/">홈화면으로 가기</br></br></a>' + html
 
 # 키워드 검색
-@app.route("/Search", methods=['POST'])
+@app.route("/Search", methods=['GET'])
 def Search():
     try:
         keyword = request.json
@@ -103,7 +103,7 @@ def Search():
                          "type": "", "host": ""}])
 
 # 게시물의 찜 횟수
-@app.route("/Like/GetLike", methods=['POST'])
+@app.route("/Like/GetLike", methods=['GET'])
 def Push_Post_Like():
     try:
         json = request.json
@@ -116,7 +116,7 @@ def Push_Post_Like():
         return jsonify({"idx": 0, "num": 0})
 
 # 유저의 찜 목록
-@app.route("/Like/Users", methods=['POST'])
+@app.route("/Like/Users", methods=['GET'])
 def PUSH_USER_Like():
     # 유저가 어떤 걸 찜했는지
     try:
@@ -151,7 +151,7 @@ def Update_JJIM():
         return jsonify({"Check": False})
 
 # 찜 삭제
-@app.route("/Like/Delete", methods=['POST'])
+@app.route("/Like/Delete", methods=['DELETE'])
 def Delete_JJIM():
     try:
         json = request.json
@@ -166,7 +166,7 @@ def Delete_JJIM():
         return jsonify({"Check": False})
 
 # 찜 목록
-@app.route("/Like/List", methods=['POST'])
+@app.route("/Like/List", methods=['GET'])
 def List_JJIM():
     try:
         query = cur.execute("SELECT * FROM all_data_like")
@@ -179,7 +179,7 @@ def List_JJIM():
         return jsonify([{"L_idx": 0, "Like": 0}])
 
 # 인기 지원금 리스트
-@app.route("/popular", methods=['POST'])
+@app.route("/popular", methods=['GET'])
 def Popular_List():
     try:
         query = cur2.execute("SELECT * From all_data INNER JOIN all_data_Like ON all_data.all_idx = all_data_Like.L_idx")
@@ -193,7 +193,7 @@ def Popular_List():
         return jsonify([{"all_idx": 0, "title": "", "href": "", "host": "", "like": 0}])
 
 # 신규 지원금 리스트
-@app.route("/new", methods=['POST'])
+@app.route("/new", methods=['GET'])
 def New_List():
     try:
         query = cur.execute("SELECT * From all_data INNER JOIN all_data_Like ON all_data.all_idx = all_data_Like.L_idx")
@@ -208,7 +208,7 @@ def New_List():
         return jsonify([{"all_idx": 0, "title": "", "href": "", "host": "", "like": 0}])
 
 # 댓글 리스트
-@app.route("/comment/list", methods=['POST'])
+@app.route("/comment/list", methods=['GET'])
 def Comment_list():
     try:
         json = request.json
@@ -237,7 +237,7 @@ def Comment_add():
         return jsonify({"isOK": False})
 
 # 댓글삭제
-@app.route("/comment/delete", methods=['POST'])
+@app.route("/comment/delete", methods=['DELETE'])
 def Comment_delete():
     try:
         json = request.json
@@ -248,7 +248,7 @@ def Comment_delete():
         return jsonify({"isOK": False})
 
 # 조건 검색
-@app.route("/Search/select", methods=['POST'])
+@app.route("/Search/select", methods=['GET'])
 def Search_select():
     try:
         json = request.json
